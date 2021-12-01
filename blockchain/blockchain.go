@@ -1,6 +1,9 @@
 package blockchain
 
-import "goblockchain/block"
+import (
+	"fmt"
+	"goblockchain/block"
+)
 
 const (
 	GENESIS = "Genesis"
@@ -18,13 +21,12 @@ func initBlockchain() *Blockchain {
 	}
 }
 
-func (bc *Blockchain) genesisBlock(data string) {
-	newBlock := block.CreateBlock(data, []byte(GENESIS))
-	bc.Blocks = append(bc.Blocks, *newBlock)
-}
-
-func (bc *Blockchain) AddBlock(data string) {
+func (bc *Blockchain) AddBlock(data string) error {
+	if len(bc.Blocks) != 1 {
+		return fmt.Errorf("Initialize blockchain before add a new block")
+	}
 	prevBlock := bc.Blocks[len(bc.Blocks)-1]
 	newBlock := block.CreateBlock(data, prevBlock.Hash)
 	bc.Blocks = append(bc.Blocks, *newBlock)
+	return nil
 }
