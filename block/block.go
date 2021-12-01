@@ -1,6 +1,8 @@
 package block
 
 import (
+	"bytes"
+	"encoding/gob"
 	"fmt"
 )
 
@@ -20,10 +22,21 @@ func CreateBlock(data string, prevHash []byte) *Block {
 		Hash:     nil,
 		Data:     []byte(data),
 		PrevHash: prevHash,
-		Nonce: 0,
+		Nonce:    0,
 	}
 	proof := NewProof(block)
 	block.Hash, block.Nonce = proof.Generate()
 
 	return block
+}
+
+func (b *Block) Serialize() []byte {
+	var buf bytes.Buffer
+	encoder := gob.NewEncoder(&buf)
+	err := encoder.Encode(b)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	return buf.Bytes()
 }
