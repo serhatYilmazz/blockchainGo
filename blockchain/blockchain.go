@@ -54,6 +54,19 @@ func genesis() *block.Block {
 	return createdBlock
 }
 
+func (bc *Blockchain) AddBlock(data string) *block.Block {
+	prevHash := bc.lastHash
+	newBlock := block.CreateBlock(data, prevHash)
+	err := bc.Database.Update(func(txn *badger.Txn) error {
+		err := txn.Set(newBlock.Hash, newBlock.Serialize())
+		HandleError(err)
+		bc.lastHash = newBlock.Hash
+		return nil
+	})
+	HandleError(err)
+	return newBlock
+}
+
 }
 
 func HandleError(err error) {
