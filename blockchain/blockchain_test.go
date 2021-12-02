@@ -1,13 +1,16 @@
 package blockchain
 
 import (
+	"fmt"
+	"github.com/dgraph-io/badger"
 	"testing"
 )
 
 func TestBlockChain_genesisBlock(t *testing.T) {
-	bc := initBlockchain()
-	if len(bc.Blocks) != 1 {
-		t.Errorf("There should be exactly one block in blockchain, but there is %d", len(bc.Blocks))
+	bc := InitBlockchain()
+	fmt.Println(len(bc.lastHash))
+	if len(bc.lastHash) != 64 {
+		t.Errorf("There should be exactly one block in blockchain")
 	}
 }
 
