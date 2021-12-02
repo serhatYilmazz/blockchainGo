@@ -50,6 +50,16 @@ func TestIterator_Iterator_Next_HasNext(t *testing.T) {
 	cleanDb(bc)
 }
 
+func cleanDb(bc *Blockchain) {
+	it := NewIterator(bc)
+	for it.HasNext() {
+		deleteFromBlockchain(bc.Database, it.Next().Hash)
+	}
+	deleteFromBlockchain(bc.Database, []byte(LastHash))
+}
+
+func deleteFromBlockchain(db *badger.DB, hashToDelete []byte) {
+	err := db.Update(func(txn *badger.Txn) error {
 		err := txn.Delete(hashToDelete)
 		HandleError(err)
 		return nil
