@@ -85,6 +85,32 @@ type Iterator struct {
 	current *block.Block
 	db      *badger.DB
 }
+
+func NewIterator(bc *Blockchain) (it *Iterator) {
+	return &Iterator{
+		current: &block.Block{Hash: bc.lastHash},
+		db:      bc.Database,
+	}
+}
+
+func (it *Iterator) Next() (b *block.Block) {
+	if it.current.Data == nil {
+		b = GetBlockByHash(it.db, it.current.Hash)
+	}else {
+		b = it.current
+	}
+
+	// Genesis block's prevhash is set to nil
+	if b.PrevHash == nil {
+		it.current = nil
+		return
+	}
+	it.current = GetBlockByHash(it.db, b.PrevHash)
+	return
+}
+
+func (it *Iterator) HasNext() bool {
+	return it.current != nil
 }
 
 func HandleError(err error) {
