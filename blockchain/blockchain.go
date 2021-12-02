@@ -17,6 +17,10 @@ type Blockchain struct {
 	Database *badger.DB
 }
 
+type Iterator struct {
+	currentHash []byte
+	db       *badger.DB
+}
 
 func InitBlockchain() *Blockchain {
 	db, err := badger.Open(badger.DefaultOptions(dbPath))
@@ -67,6 +71,20 @@ func (bc *Blockchain) AddBlock(data string) *block.Block {
 	return newBlock
 }
 
+func (bc *Blockchain) GetBlockByHash(hash []byte) *block.Block {
+	var b *block.Block
+	err := bc.Database.View(func(txn *badger.Txn) error {
+		get, err := txn.Get(hash)
+		HandleError(err)
+		valueCopy, err := get.ValueCopy([]byte{})
+		deserializedBlock := block.Deserialize(valueCopy)
+		b = deserializedBlock
+		HandleError(err)
+		return nil
+	})
+	HandleError(err)
+
+	return b
 }
 
 func HandleError(err error) {
