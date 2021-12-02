@@ -50,7 +50,7 @@ func TestIterator_Iterator_Next_HasNext(t *testing.T) {
 	cleanDb(bc)
 }
 
-func cleanDb(bc *Blockchain) {
+func cleanDb(bc *PersistentBlockchain) {
 	it := NewIterator(bc)
 	for it.HasNext() {
 		deleteFromBlockchain(bc.Database, it.Next().Hash)
