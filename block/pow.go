@@ -80,3 +80,9 @@ func Int64ToByteSlice(d int64) []byte {
 	}
 	return buf.Bytes()
 }
+
+func (p *Proof) ValidateBlock() bool {
+	data := p.createData(p.Block.Nonce)
+	hash := deriveHash(data)
+	return p.validateHash(hash)
+}
