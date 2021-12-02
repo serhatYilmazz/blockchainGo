@@ -28,8 +28,28 @@ func TestBlockChain_AddBlock(t *testing.T) {
 	cleanDb(bc)
 }
 
-func deleteFromBlockchain(bc *Blockchain, hashToDelete []byte) {
-	err := bc.Database.Update(func(txn *badger.Txn) error {
+func TestIterator_Iterator_Next_HasNext(t *testing.T) {
+	d1 := "This is an example block data d1"
+	d2 := "This is an example block data d2"
+	d3 := "This is an example block data d3"
+	bc := InitBlockchain()
+	defer bc.Database.Close()
+	bc.AddBlock(d1)
+	bc.AddBlock(d2)
+	bc.AddBlock(d3)
+
+	it := NewIterator(bc)
+	counter := 0
+	for it.HasNext() {
+		counter++
+		it.Next().Print()
+	}
+	if counter != 4 {
+		t.Errorf("Total number of blocks should be %d, but it is %d", 4, counter)
+	}
+	cleanDb(bc)
+}
+
 		err := txn.Delete(hashToDelete)
 		HandleError(err)
 		return nil
