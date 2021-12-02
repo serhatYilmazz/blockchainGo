@@ -1,1 +1,3 @@
-package goblockchain
+package main
+
+func main() {}
