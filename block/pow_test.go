@@ -8,15 +8,30 @@ import (
 
 func TestNewProof(t *testing.T) {
 	block := CreateBlock("dummy data", []byte("dummy prev Hash"))
-	proof := NewProof(block)
+	proof := NewProof(block, 12)
 	if proof.Block.Print() != block.Print() {
 		t.Errorf("Newly created proof is ntot true")
 	}
 }
 
+func TestProof_ValidateBlock(t *testing.T) {
+	block := CreateBlock("dummy data", []byte("dummy prev Hash"))
+	proof := NewProof(block, 12)
+	validatedBlock := proof.ValidateBlock()
+	if !validatedBlock {
+		t.Errorf("Block Validation failure")
+	}
+
+	proofFalse := NewProof(block, 13)
+	falseValidatedBlock := proofFalse.ValidateBlock()
+	if falseValidatedBlock {
+		t.Errorf("Block Validation failure")
+	}
+}
+
 func TestProof_Generate(t *testing.T) {
 	block := CreateBlock("dummy data", []byte("dummy prev Hash"))
-	proof := NewProof(block)
+	proof := NewProof(block, 12)
 	hash, generatedNonce := proof.Generate()
 
 	if proof.Block.Nonce != generatedNonce {
