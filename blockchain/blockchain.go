@@ -120,3 +120,20 @@ func HandleError(err error) {
 		fmt.Println(err)
 	}
 }
+
+type Blockchain struct {
+	Blocks []block.Block
+}
+
+func (bc *Blockchain) LoadToMemory(pbc *PersistentBlockchain) {
+	it := NewIterator(pbc)
+	for it.HasNext() {
+		bc.Blocks = append(bc.Blocks, *it.Next())
+	}
+}
+
+func (bc *Blockchain) Print() {
+	for _, val := range bc.Blocks {
+		fmt.Println(val.Print())
+	}
+}
