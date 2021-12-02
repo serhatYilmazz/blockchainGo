@@ -8,7 +8,7 @@ import (
 
 const (
 	GENESIS  = "Genesis"
-	dbPath   = "./tmp/blockchain"
+	dbPath   = "./tmp"
 	LastHash = "lh"
 )
 
@@ -58,6 +58,8 @@ func (bc *Blockchain) AddBlock(data string) (newBlock *block.Block) {
 	newBlock = block.CreateBlock(data, prevHash)
 	err := bc.Database.Update(func(txn *badger.Txn) error {
 		err := txn.Set(newBlock.Hash, newBlock.Serialize())
+		HandleError(err)
+		err = txn.Set([]byte(LastHash), newBlock.Hash)
 		HandleError(err)
 		bc.lastHash = newBlock.Hash
 		return nil
