@@ -43,7 +43,7 @@ func (b *Block) Serialize() []byte {
 
 func Deserialize(data []byte) (b *Block) {
 	decoder := gob.NewDecoder(bytes.NewReader(data))
-	err := decoder.Decode(b)
+	err := decoder.Decode(&b)
 	if err != nil {
 		fmt.Println(err)
 	}
