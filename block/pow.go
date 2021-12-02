@@ -10,21 +10,22 @@ import (
 )
 
 type Proof struct {
-	Block  *Block
-	Target big.Int
+	Block      *Block
+	Target     big.Int
+	Difficulty int
 }
 
 const (
-	HashSpace  = 512
-	Difficulty = 12
+	HashSpace = 512
 )
 
-func NewProof(b *Block) *Proof {
+func NewProof(b *Block, difficulty int) *Proof {
 	one := big.NewInt(1)
-	target := one.Lsh(one, uint(HashSpace-Difficulty))
+	target := one.Lsh(one, uint(HashSpace-difficulty))
 	return &Proof{
 		Block:  b,
 		Target: *target,
+		Difficulty: difficulty,
 	}
 }
 
@@ -32,10 +33,10 @@ func (p *Proof) Generate() ([]byte, int) {
 	nonce := 0
 	var hash [64]byte
 	for nonce < math.MaxInt {
-		data := createData(nonce, p)
+		data := p.createData(nonce)
 		hash = deriveHash(data)
 		fmt.Printf("\r%x", hash)
-		isValid := validateHash(hash, p)
+		isValid := p.validateHash(hash)
 		if isValid {
 			break
 		} else {
@@ -46,7 +47,7 @@ func (p *Proof) Generate() ([]byte, int) {
 	return hash[:], nonce
 }
 
-func validateHash(hash [64]byte, p *Proof) bool {
+func (p *Proof) validateHash(hash [64]byte) bool {
 	var intHash big.Int
 	intHash.SetBytes(hash[:])
 
@@ -60,12 +61,12 @@ func deriveHash(data []byte) [64]byte {
 	return sha512.Sum512(data)
 }
 
-func createData(nonce int, p *Proof) (data []byte) {
+func (p *Proof) createData(nonce int) (data []byte) {
 	data = bytes.Join([][]byte{
 		p.Block.PrevHash,
 		p.Block.Data,
 		Int64ToByteSlice(int64(nonce)),
-		Int64ToByteSlice(int64(Difficulty)),
+		Int64ToByteSlice(int64(p.Difficulty)),
 	},
 		[]byte{})
 	return
