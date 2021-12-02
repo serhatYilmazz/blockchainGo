@@ -12,21 +12,21 @@ const (
 	LastHash = "lh"
 )
 
-type Blockchain struct {
+type PersistentBlockchain struct {
 	lastHash []byte
 	Database *badger.DB
 }
 
-func InitBlockchain() *Blockchain {
+func InitBlockchain() *PersistentBlockchain {
 	db, err := badger.Open(badger.DefaultOptions(dbPath))
-	bc := &Blockchain{
+	bc := &PersistentBlockchain{
 		lastHash: nil,
 		Database: db,
 	}
 	HandleError(err)
 	err = db.Update(func(txn *badger.Txn) error {
 		if lh, rerr := txn.Get([]byte(LastHash)); rerr == badger.ErrKeyNotFound {
-			fmt.Println("Blockchain does not exist.")
+			fmt.Println("PersistentBlockchain does not exist.")
 			genesis := genesis()
 			serializedBlock := genesis.Serialize()
 			bc.lastHash = genesis.Hash
@@ -53,7 +53,7 @@ func genesis() *block.Block {
 	return createdBlock
 }
 
-func (bc *Blockchain) AddBlock(data string) (newBlock *block.Block) {
+func (bc *PersistentBlockchain) AddBlock(data string) (newBlock *block.Block) {
 	prevHash := bc.lastHash
 	newBlock = block.CreateBlock(data, prevHash)
 	err := bc.Database.Update(func(txn *badger.Txn) error {
@@ -88,17 +88,17 @@ type Iterator struct {
 	db      *badger.DB
 }
 
-func NewIterator(bc *Blockchain) (it *Iterator) {
+func NewIterator(pbc *PersistentBlockchain) (it *Iterator) {
 	return &Iterator{
-		current: &block.Block{Hash: bc.lastHash},
-		db:      bc.Database,
+		current: &block.Block{Hash: pbc.lastHash},
+		db:      pbc.Database,
 	}
 }
 
 func (it *Iterator) Next() (b *block.Block) {
 	if it.current.Data == nil {
 		b = GetBlockByHash(it.db, it.current.Hash)
-	}else {
+	} else {
 		b = it.current
 	}
 
