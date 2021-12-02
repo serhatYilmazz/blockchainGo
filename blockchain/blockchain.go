@@ -7,19 +7,14 @@ import (
 )
 
 const (
-	GENESIS = "Genesis"
-	dbPath  = "./tmp/blockchain"
+	GENESIS  = "Genesis"
+	dbPath   = "./tmp/blockchain"
 	LastHash = "lh"
 )
 
 type Blockchain struct {
 	lastHash []byte
 	Database *badger.DB
-}
-
-type Iterator struct {
-	currentHash []byte
-	db       *badger.DB
 }
 
 func InitBlockchain() *Blockchain {
@@ -58,9 +53,9 @@ func genesis() *block.Block {
 	return createdBlock
 }
 
-func (bc *Blockchain) AddBlock(data string) *block.Block {
+func (bc *Blockchain) AddBlock(data string) (newBlock *block.Block) {
 	prevHash := bc.lastHash
-	newBlock := block.CreateBlock(data, prevHash)
+	newBlock = block.CreateBlock(data, prevHash)
 	err := bc.Database.Update(func(txn *badger.Txn) error {
 		err := txn.Set(newBlock.Hash, newBlock.Serialize())
 		HandleError(err)
@@ -68,12 +63,11 @@ func (bc *Blockchain) AddBlock(data string) *block.Block {
 		return nil
 	})
 	HandleError(err)
-	return newBlock
+	return
 }
 
-func (bc *Blockchain) GetBlockByHash(hash []byte) *block.Block {
-	var b *block.Block
-	err := bc.Database.View(func(txn *badger.Txn) error {
+func GetBlockByHash(db *badger.DB, hash []byte) (b *block.Block) {
+	err := db.View(func(txn *badger.Txn) error {
 		get, err := txn.Get(hash)
 		HandleError(err)
 		valueCopy, err := get.ValueCopy([]byte{})
@@ -84,7 +78,13 @@ func (bc *Blockchain) GetBlockByHash(hash []byte) *block.Block {
 	})
 	HandleError(err)
 
-	return b
+	return
+}
+
+type Iterator struct {
+	current *block.Block
+	db      *badger.DB
+}
 }
 
 func HandleError(err error) {
