@@ -2,9 +2,9 @@ package block
 
 import (
 	"bytes"
-	"crypto/sha512"
 	"encoding/binary"
 	"fmt"
+	"goblockchain/util"
 	"math"
 	"math/big"
 )
@@ -34,7 +34,7 @@ func (p *Proof) Generate() ([]byte, int) {
 	var hash [64]byte
 	for nonce < math.MaxInt {
 		data := p.createData(nonce)
-		hash = deriveHash(data)
+		hash = util.DeriveHash(data)
 		fmt.Printf("\r%x", hash)
 		isValid := p.validateHash(hash)
 		if isValid {
@@ -57,14 +57,10 @@ func (p *Proof) validateHash(hash [64]byte) bool {
 	return false
 }
 
-func deriveHash(data []byte) [64]byte {
-	return sha512.Sum512(data)
-}
-
 func (p *Proof) createData(nonce int) (data []byte) {
 	data = bytes.Join([][]byte{
 		p.Block.PrevHash,
-		p.Block.Data,
+		p.Block.HashTransactions(),
 		Int64ToByteSlice(int64(nonce)),
 		Int64ToByteSlice(int64(p.Difficulty)),
 	},
@@ -83,6 +79,6 @@ func Int64ToByteSlice(d int64) []byte {
 
 func (p *Proof) ValidateBlock() bool {
 	data := p.createData(p.Block.Nonce)
-	hash := deriveHash(data)
+	hash := util.DeriveHash(data)
 	return p.validateHash(hash)
 }
